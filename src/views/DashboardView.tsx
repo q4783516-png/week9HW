@@ -27,8 +27,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const { records, thoughts, topics, links, setRecordStatus } = useKnowledgeBase();
 
   const unreadRecords = records.filter((r) => r.status === 'unread');
-  const recentRecords = [...records].slice(0, 4);
-  const recentThoughts = [...thoughts].slice(0, 4);
+  const recentRecords = [...records]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 4);
+  const recentThoughts = [...thoughts]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 4);
 
   // Collect unresolved questions across topics
   const allUnresolved = topics.flatMap((tp) =>
