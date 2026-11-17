@@ -1,8 +1,8 @@
 import { KnowledgeBaseData } from '../types';
 
 /**
- * 虛構測試資料（Fixture Data）
- * 符合規格第 8 條第 9 款：不含任何個人隱私，且充分展示五大情境與各資料類型
+ * 虛構與演示測試資料（Fixture Data）
+ * 符合規格第 8 條第 9 款：展示五大情境、各資料類型與真實知識管理案例
  */
 export const initialFixtures: KnowledgeBaseData = {
   records: [
@@ -91,6 +91,61 @@ export const initialFixtures: KnowledgeBaseData = {
       createdAt: '2026-11-16T16:45:00Z',
       updatedAt: '2026-11-16T16:45:00Z',
     },
+    {
+      id: 'rec-006',
+      title: '如何提供有效安慰 (YouTube 知識影片)',
+      url: 'https://www.youtube.com/watch?v=BaxuGWxUv9A',
+      rawContent: '情緒不是我們要解決的問題，安慰也不是為了消滅情緒。\n\n有效安慰的本質，不是讓對方從情緒中走出來，而是讓一個處在情緒漩渦中的人知道：他不是一個人，他的感受不會被否定，他也不需要因為有這樣的情緒而感到羞恥。',
+      type: 'link',
+      status: 'read',
+      sourceMeta: {
+        domain: 'youtube.com',
+        author: '心理學與人際溝通頻道',
+        savedAt: '2026-11-17T03:00:00Z',
+      },
+      tags: ['情緒陪伴', '同理心', '溝通心理學', '人際關係'],
+      aiMetadata: {
+        summary: '影片探討有效安慰的核心本質：並非急於消滅情緒或替對方解決問題，而是給予情緒接納與陪伴，消除對方的孤獨感與情緒羞恥感。',
+        suggestedTags: ['情緒接納', '非暴力溝通'],
+        analyzedAt: '2026-11-17T03:05:00Z',
+      },
+      createdAt: '2026-11-17T03:00:00Z',
+      updatedAt: '2026-11-17T03:05:00Z',
+    },
+    {
+      id: 'rec-007',
+      title: '個人知識庫：從 LLM Wiki 到資料輸入設計 (ChatGPT 對話紀錄)',
+      rawContent: `【核心討論要點紀錄】
+
+1. LLM Wiki 與個人知識庫架構：
+LLM Wiki 源自 Andrej Karpathy 構想，是一種由 Agentic AI 輔助的知識管理架構，核心在於利用 LLM 預先建立、整合並持續演進知識庫，不同於傳統 RAG 僅在查詢時單向檢索原始文件。
+
+2. 個人知識庫的核心矛盾與破局之道：
+- 矛盾一：若為了知識庫而改變筆記方式，會造成額外負擔與工具異化。
+- 矛盾二：知識多來自 YouTube 影片或零碎對話，難以先產出教科書式完整筆記。
+- 解方：確立「原始資料（外部輸入）」、「個人認知紀錄（個人觀點與疑問）」與「AI 知識整理」三者徹底分開。
+
+3. 關鍵設計原則確立：
+- 原始資料與個人認知獨立：AI 整理絕不覆寫使用者原話，亦不可標示為已掌握的個人知識。
+- 知識是網絡而非資料夾：未閱讀/待觀看的資料也能成為網絡節點，透過情境式重新發現（Contextual Rediscovery）提早參與思考。
+- 靈感驅動與來源追溯（Source-first）：回顧的目的往往是因新靈感而重新檢視原始素材。
+- 最低輸入摩擦：支援純文字 Markdown (.md) 匯入與快捷網址儲存。`,
+      type: 'text',
+      status: 'read',
+      sourceMeta: {
+        domain: 'chatgpt.com',
+        author: 'User & ChatGPT',
+        savedAt: '2026-11-16T12:00:00Z',
+      },
+      tags: ['個人知識庫', 'LLM Wiki', '資料輸入設計', 'PKM'],
+      aiMetadata: {
+        summary: '深入探討個人知識庫的設計哲學，確立了「原始資料與個人認知徹底分開」、「低輸入門檻」、「未讀資料的網絡價值」與「來源可追溯性」等關鍵原則。',
+        suggestedTags: ['認知架構', '系統設計', '心智模型'],
+        analyzedAt: '2026-11-16T12:10:00Z',
+      },
+      createdAt: '2026-11-16T12:00:00Z',
+      updatedAt: '2026-11-16T12:10:00Z',
+    },
   ],
   thoughts: [
     {
@@ -148,6 +203,28 @@ export const initialFixtures: KnowledgeBaseData = {
       createdAt: '2026-11-15T11:20:00Z',
       updatedAt: '2026-11-15T11:20:00Z',
     },
+    {
+      id: 'thg-006',
+      title: '「解決問題導向」在情緒安慰中的反效果',
+      content: '我們習慣把問題解決思維帶入人際溝通，看到對方難過就急著給建議或理性分析。但這支影片點醒了我：當對方處於情緒漩渦時，過早的理性建議反而暗示了「你現在的情緒是不合宜、需要被修正的」，進而引發次級的羞恥感。先建立連結，再談解決。',
+      thoughtType: 'insight', // 心得領會
+      relatedRecordIds: ['rec-006'],
+      topicIds: ['top-004'],
+      tags: ['同理心', '溝通盲點', '情緒接納'],
+      createdAt: '2026-11-17T03:15:00Z',
+      updatedAt: '2026-11-17T03:15:00Z',
+    },
+    {
+      id: 'thg-007',
+      title: '待觀看資料是否應具備網絡節點身分？',
+      content: '過去我總認為「沒看過、沒消化的資料不配進入知識庫」。但這次討論讓我反思：待觀看的影片只要有初步的標題與索引，就可以作為潛在的邊界節點。當新的思考問題出現時，系統能將這些潛在資料召回，讓我更早處理它們。這徹底翻轉了線性的待辦思維。',
+      thoughtType: 'evolution', // 觀點轉變歷程
+      relatedRecordIds: ['rec-007', 'rec-004'],
+      topicIds: ['top-001'],
+      tags: ['知識網絡', '待讀佇列', '觀點演進'],
+      createdAt: '2026-11-16T12:30:00Z',
+      updatedAt: '2026-11-16T12:30:00Z',
+    },
   ],
   topics: [
     {
@@ -158,9 +235,10 @@ export const initialFixtures: KnowledgeBaseData = {
       unresolvedQuestions: [
         '如何衡量一個外化知識庫真正提升了理解，而不只是製造了收藏焦慮？',
         '原子化筆記與脈絡連貫性之間的最佳平衡點在哪裡？',
+        '如何設計最低摩擦力的輸入流程，讓對話與影片能自然進入知識庫？',
       ],
       createdAt: '2026-11-10T08:00:00Z',
-      updatedAt: '2026-11-14T10:00:00Z',
+      updatedAt: '2026-11-16T13:00:00Z',
     },
     {
       id: 'top-002',
@@ -184,6 +262,18 @@ export const initialFixtures: KnowledgeBaseData = {
       ],
       createdAt: '2026-11-13T09:00:00Z',
       updatedAt: '2026-11-13T09:00:00Z',
+    },
+    {
+      id: 'top-004',
+      name: '情緒溝通與同理心實踐',
+      description: '探討情緒接納、同理陪伴與人際連結的本質，克服理性解決問題導向的溝通盲點。',
+      color: '#ec4899',
+      unresolvedQuestions: [
+        '如何在陪伴他人強烈情緒的同時，維持自我心理邊界而不被情緒耗竭？',
+        '當理性的解決方案與對方的情感接納需求衝突時，最佳的介入時機如何判斷？',
+      ],
+      createdAt: '2026-11-17T03:00:00Z',
+      updatedAt: '2026-11-17T03:00:00Z',
     },
   ],
   links: [
@@ -241,6 +331,39 @@ export const initialFixtures: KnowledgeBaseData = {
       origin: 'ai_suggested', // AI 發現並建議的思考張力（未經使用者確認前明確標籤）
       note: 'AI 建議：thg-005 提出的認知退化隱憂，與 thg-002 對 AI 作為外化記憶的樂觀看法形成對比張力',
       createdAt: '2026-11-15T11:30:00Z',
+    },
+    {
+      id: 'lnk-006',
+      sourceId: 'thg-006',
+      sourceType: 'thought',
+      targetId: 'rec-006',
+      targetType: 'record',
+      relationType: 'derives_from',
+      origin: 'user',
+      note: '由影片中對情緒羞恥感的闡述，反思個人習慣急於給建議的溝通盲點',
+      createdAt: '2026-11-17T03:20:00Z',
+    },
+    {
+      id: 'lnk-007',
+      sourceId: 'thg-007',
+      sourceType: 'thought',
+      targetId: 'rec-007',
+      targetType: 'record',
+      relationType: 'derives_from',
+      origin: 'user',
+      note: '在對話中確立待觀看資料應作為網絡節點之重要認知演進',
+      createdAt: '2026-11-16T12:35:00Z',
+    },
+    {
+      id: 'lnk-008',
+      sourceId: 'thg-007',
+      sourceType: 'thought',
+      targetId: 'rec-004',
+      targetType: 'record',
+      relationType: 'relates_to',
+      origin: 'ai_suggested',
+      note: 'AI 建議：thg-007 探討待讀資料的網絡價值，可能與收件匣中未讀的 Deep Work 摘錄產生連結',
+      createdAt: '2026-11-16T12:40:00Z',
     },
   ],
 };

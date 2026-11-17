@@ -12,11 +12,19 @@ import {
   Plus,
   Clock,
   Filter,
+  Eye,
+  Download,
+  Youtube,
 } from 'lucide-react';
 import { useKnowledgeBase } from '../hooks/useKnowledgeBase';
 import { RecordItem, RecordType, RecordStatus } from '../types';
 import { analyzeRecordHeuristic } from '../services/aiAssistant';
-import { thoughtTypeLabels } from '../services/obsidianExporter';
+import {
+  thoughtTypeLabels,
+  generateRecordMarkdown,
+  triggerDownload,
+  sanitizeFilename,
+} from '../services/obsidianExporter';
 
 interface RecordsViewProps {
   onAddThoughtForRecord: (recordId: string) => void;
@@ -27,7 +35,7 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
   onAddThoughtForRecord,
   externalSearchQuery = '',
 }) => {
-  const { data, records, thoughts, updateRecord, deleteRecord, setRecordStatus } =
+  const { data, records, thoughts, topics, updateRecord, deleteRecord, setRecordStatus } =
     useKnowledgeBase();
 
   const [search, setSearch] = useState(externalSearchQuery);
@@ -35,8 +43,9 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
   const [selectedStatus, setSelectedStatus] = useState<RecordStatus | 'all'>('all');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
-  // Edit record state
+  // Edit and View states
   const [editingRecord, setEditingRecord] = useState<RecordItem | null>(null);
+  const [viewingRecord, setViewingRecord] = useState<RecordItem | null>(null);
 
   // AI analyzing state
   const [analyzingId, setAnalyzingId] = useState<string | null>(null);
@@ -69,6 +78,14 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
       });
       setAnalyzingId(null);
     }, 400);
+  };
+
+  const handleDownloadSingleMD = (record: RecordItem) => {
+    const relatedThoughts = thoughts.filter((t) => t.relatedRecordIds.includes(record.id));
+    const md = generateRecordMarkdown(record, relatedThoughts, []);
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const filename = `${record.createdAt.substring(0, 10)}-${sanitizeFilename(record.title)}.md`;
+    triggerDownload(blob, filename);
   };
 
   return (
@@ -108,7 +125,7 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
           >
             <option value="all">所有格式</option>
             <option value="link">網址來源 (Link)</option>
-            <option value="text">純文字 (Text)</option>
+            <option value="text">純文字/對話 (Text)</option>
             <option value="quote">引述佳句 (Quote)</option>
           </select>
 
@@ -164,6 +181,8 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
         ) : (
           filtered.map((r) => {
             const relatedThoughts = thoughts.filter((t) => t.relatedRecordIds.includes(r.id));
+            const isYt = r.url?.includes('youtube.com') || r.url?.includes('youtu.be');
+
             return (
               <div
                 key={r.id}
@@ -171,20 +190,25 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
               >
                 {/* Header Row */}
                 <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-start">
-                  <div className="space-y-1">
+                  <div className="space-y-1 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <span
                         className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${
-                          r.type === 'link'
+                          isYt
+                            ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'
+                            : r.type === 'link'
                             ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
                             : r.type === 'quote'
                             ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
                             : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
                         }`}
                       >
-                        {r.type}
+                        {isYt ? 'YouTube 影片' : r.type}
                       </span>
-                      <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                      <h3
+                        onClick={() => setViewingRecord(r)}
+                        className="cursor-pointer text-base font-bold text-slate-900 hover:text-brand-600 dark:text-white dark:hover:text-brand-400"
+                      >
                         {r.title}
                       </h3>
                       {r.status === 'unread' && (
@@ -202,11 +226,11 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
                           rel="noreferrer"
                           className="flex items-center gap-1 text-brand-600 hover:underline dark:text-brand-400"
                         >
-                          <ExternalLink className="h-3 w-3" />
-                          <span>原始連結</span>
+                          {isYt ? <Youtube className="h-3 w-3 text-red-500" /> : <ExternalLink className="h-3 w-3" />}
+                          <span>開啟原始出處</span>
                         </a>
                       )}
-                      {r.sourceMeta?.author && <span>作者: {r.sourceMeta.author}</span>}
+                      {r.sourceMeta?.author && <span>作者/來源: {r.sourceMeta.author}</span>}
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         {r.createdAt.substring(0, 10)}
@@ -215,13 +239,30 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <button
+                      onClick={() => setViewingRecord(r)}
+                      className="flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
+                      title="閱讀完整內容"
+                    >
+                      <Eye className="h-3.5 w-3.5 text-slate-500" />
+                      <span>全文</span>
+                    </button>
+
                     <button
                       onClick={() => onAddThoughtForRecord(r.id)}
                       className="flex items-center gap-1 rounded-lg border border-purple-200 bg-purple-50/50 px-2.5 py-1 text-xs font-medium text-purple-700 hover:bg-purple-100 dark:border-purple-800 dark:bg-purple-950/40 dark:text-purple-300"
                     >
                       <Lightbulb className="h-3.5 w-3.5" />
                       <span>記錄想法</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleDownloadSingleMD(r)}
+                      className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"
+                      title="下載單筆 Markdown 檔案"
+                    >
+                      <Download className="h-4 w-4" />
                     </button>
 
                     <button
@@ -247,7 +288,15 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
                   <div className="mb-1 text-[10px] font-semibold uppercase text-slate-400">
                     原始內容 / 摘錄
                   </div>
-                  {r.rawContent}
+                  <p className="line-clamp-3 whitespace-pre-wrap">{r.rawContent}</p>
+                  {r.rawContent.length > 200 && (
+                    <button
+                      onClick={() => setViewingRecord(r)}
+                      className="mt-1 text-[11px] font-semibold text-brand-600 hover:underline dark:text-brand-400"
+                    >
+                      展開閱讀全文 ({r.rawContent.length} 字)...
+                    </button>
+                  )}
                 </div>
 
                 {/* Tags */}
@@ -346,6 +395,83 @@ export const RecordsView: React.FC<RecordsViewProps> = ({
           })
         )}
       </div>
+
+      {/* Full Content Reader Modal */}
+      {viewingRecord && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-xs">
+          <div className="flex max-h-[88vh] w-full max-w-2xl flex-col rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-slate-100 p-5 dark:border-slate-800">
+              <div>
+                <span className="rounded bg-blue-100 px-2 py-0.5 text-[10px] font-bold uppercase text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                  {viewingRecord.type}
+                </span>
+                <h3 className="mt-2 text-lg font-bold text-slate-900 dark:text-white">
+                  {viewingRecord.title}
+                </h3>
+                {viewingRecord.url && (
+                  <a
+                    href={viewingRecord.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-1 flex items-center gap-1 text-xs text-brand-600 hover:underline dark:text-brand-400"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    <span>{viewingRecord.url}</span>
+                  </a>
+                )}
+              </div>
+              <button
+                onClick={() => setViewingRecord(null)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                  原始完整內容
+                </h4>
+                <div className="mt-2 whitespace-pre-wrap rounded-xl bg-slate-50 p-4 font-mono text-xs leading-relaxed text-slate-800 dark:bg-slate-800/60 dark:text-slate-200">
+                  {viewingRecord.rawContent}
+                </div>
+              </div>
+
+              {viewingRecord.aiMetadata?.summary && (
+                <div className="rounded-xl border border-purple-100 bg-purple-50/50 p-4 dark:border-purple-900/40 dark:bg-purple-950/20">
+                  <div className="flex items-center gap-1.5 font-bold text-purple-700 dark:text-purple-300 text-xs">
+                    <Sparkles className="h-4 w-4" />
+                    <span>AI 客觀摘要</span>
+                  </div>
+                  <p className="mt-1.5 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
+                    {viewingRecord.aiMetadata.summary}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-between border-t border-slate-100 p-4 dark:border-slate-800">
+              <button
+                onClick={() => handleDownloadSingleMD(viewingRecord)}
+                className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+              >
+                <Download className="h-3.5 w-3.5" />
+                <span>下載為 Markdown (.md)</span>
+              </button>
+              <button
+                onClick={() => setViewingRecord(null)}
+                className="rounded-xl bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900"
+              >
+                關閉
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit Record Modal */}
       {editingRecord && (
