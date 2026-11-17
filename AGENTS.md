@@ -28,7 +28,7 @@
 
 | 角色名稱 | 職責定義 | 建議工具與技能 |
 | :--- | :--- | :--- |
-| **Architect / Lead Agent** | 負責整體架構決策、型別定義、儲存層與 Obsidian 匯出引擎維護 | `docs/architecture.md`, `src/types/` |
+| **Architect  / Lead Agent** | 負責整體架構決策、型別定義、儲存層與 Obsidian 匯出引擎維護 | `docs/architecture.md`, `src/types/` |
 | **Knowledge Curator (技能代理)** | 分析未整理的原始紀錄，提煉客觀摘要與概念標籤建議，絕不竄改正文 | `skills/knowledge-curator/SKILL.md` |
 | **Thought Synthesizer (認知綜效代理)** | 識別跨紀錄的心得、疑問與矛盾點，協助串聯主題與維護「未解疑問清單」 | `skills/thought-synthesizer/SKILL.md` |
 | **QA / Verifier** | 執行 Vitest 單元測試、驗證資料匯入還原完整度、檢查 GitHub Pages 建置成果 | `npm run test`, `npm run build` |
